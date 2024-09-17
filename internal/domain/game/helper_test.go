@@ -22,6 +22,10 @@ func (r *MockRepository) SaveGameRoom(gameRoom *GameRoom) error {
 	return nil
 }
 
+func (r *MockRepository) GetRandomBoardTiles(count int) (map[int]BoardTile, error) {
+	return nil, nil
+}
+
 func Test_generateRandomGameRoomName(t *testing.T) {
 
 	assert := require.New(t)

@@ -3,6 +3,8 @@ package game
 import (
 	"fmt"
 	"math/rand"
+
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -42,4 +44,23 @@ func (s *Service) generateRandomGameRoomName() (string, error) {
 	noun := RandomGameRoomWordsNouns[rand.Intn(len(RandomGameRoomWordsNouns))]
 
 	return fmt.Sprintf("%s-%s-%s", adjective1, adjective2, noun), nil
+}
+
+// placeholder for triggering events
+func (s *Service) triggerGameRoomEvents(room *GameRoom, eventType GameRoomEvent) error {
+	logrus.Debugf("Triggering event [%s] for room [%s]", eventType, room.Id)
+	return nil
+}
+
+// Makes sure we have consistent room state :)
+func (s *Service) ensureGameRoundAndTurnExist(room *GameRoom) error {
+	if room.CurrentRound == nil {
+		return NewUnexpectedError(nil, "Expected a game round to be created already!")
+	}
+
+	if room.CurrentRound.CurrentTurn == nil {
+		return NewUnexpectedError(nil, "Expected a game turn to be created already!")
+	}
+
+	return nil
 }

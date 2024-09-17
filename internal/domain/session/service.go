@@ -12,6 +12,11 @@ func (s *Service) CreateSession() *Session {
 	return &Session{}
 }
 
-func (s *Service) GetSession() *Session {
-	return s.repository.GetSession()
+func (s *Service) GetSession(token string) (*Session, error) {
+	return s.repository.GetSession(token), nil
+}
+
+// Saves a session
+func (s *Service) SaveSession(session *Session) (*Session, error) {
+	return s.repository.SaveSession(session)
 }
