@@ -6,11 +6,12 @@ import (
 )
 
 type Config struct {
-	HttpPort    string `envconfig:"HTTP_PORT" required:"true"`
-	LogLevel    string `envconfig:"LOG_LEVEL" required:"true" default:"info"`
-	LogFormat   string `envconfig:"LOG_FORMAT" required:"true" default:"json"`
-	DatabaseURL string `envconfig:"DATABASE_URL" required:"true"`
-	AppName     string `envconfig:"APP_NAME" required:"true"`
+	HttpPort     string `envconfig:"HTTP_PORT" required:"true"`
+	LogLevel     string `envconfig:"LOG_LEVEL" required:"true" default:"info"`
+	LogFormat    string `envconfig:"LOG_FORMAT" required:"true" default:"json"`
+	DatabaseURL  string `envconfig:"DATABASE_URL" required:"true"`
+	DatabaseName string `envconfig:"DATABASE_NAME" required:"true"`
+	AppName      string `envconfig:"APP_NAME" required:"true"`
 }
 
 func NewConfig() (*Config, error) {

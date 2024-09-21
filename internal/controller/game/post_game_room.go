@@ -1,12 +1,17 @@
 package game
 
-import "github.com/gin-gonic/gin"
+import (
+	"galere.se/oss-codenames-api/internal/response"
+	"github.com/gin-gonic/gin"
+)
 
 type PostGameRoomRequest struct {
 	PlayerName string `json:"playerName"`
 }
 
 func (c *Controller) PostGameRoom(gc *gin.Context) {
+
+	ctx := gc.Request.Context()
 
 	//
 	// Validate request context
@@ -17,7 +22,7 @@ func (c *Controller) PostGameRoom(gc *gin.Context) {
 		return
 	}
 
-	if session.CurrentGameRoom != nil {
+	if session.CurrentRoom != nil {
 		c.APIError(gc, "You are already in a game room", nil, 400)
 		return
 	}
@@ -45,19 +50,19 @@ func (c *Controller) PostGameRoom(gc *gin.Context) {
 	session.Player.Name = request.PlayerName
 
 	// Save the session
-	session, err := c.sessionService.SaveSession(session)
+	session, err := c.sessionService.SaveSession(ctx, session)
 	if err != nil {
 		c.APIError(gc, "Unexpected errror saving session with the updated player name", err, 500)
 		return
 	}
 
 	// Create a game room
-	room, err := c.service.CreateGameRoom(session.Player)
+	room, err := c.service.CreateGameRoom(ctx, session.Player)
 	if err != nil {
 		c.APIError(gc, "Unexpected error creating a game room", err, 500)
 		return
 	}
 
-	c.APIResponse(gc, room, 201)
+	c.APIResponse(gc, response.NewGameRoomResponse(room), 201)
 
 }

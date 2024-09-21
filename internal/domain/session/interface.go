@@ -1,6 +1,8 @@
 package session
 
+import "context"
+
 type SessionRepository interface {
-	GetSession(token string) *Session
-	SaveSession(session *Session) (*Session, error)
+	GetSession(ctx context.Context, token string) (*Session, error)
+	SaveSession(ctx context.Context, session *Session) (*Session, error)
 }

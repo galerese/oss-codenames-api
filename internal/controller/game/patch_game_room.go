@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	gamed "galere.se/oss-codenames-api/internal/domain/game"
+	"galere.se/oss-codenames-api/internal/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,6 +26,8 @@ var validGameRoomTransitionStates = []string{
 
 // Note: you can only see a game room you are part of!
 func (c *Controller) PatchGameRoom(gc *gin.Context) {
+
+	ctx := gc.Request.Context()
 
 	room, session := c.EnsureSessionPlayerIsInPathRoomByName(gc)
 	if c.HasErrors(gc) {
@@ -54,20 +57,20 @@ func (c *Controller) PatchGameRoom(gc *gin.Context) {
 	switch request.State {
 	// A game is starting
 	case gamed.GameRoomStateStarted:
-		room, err = c.service.StartGame(room, session.Player)
+		room, err = c.service.StartGame(ctx, room, session.Player)
 	// Spymasters have been selected
 	case gamed.GameRoomStateSpymastersSettled:
-		room, err = c.service.SettleSpymasters(room, session.Player)
+		room, err = c.service.SettleSpymasters(ctx, room, session.Player)
 	// A clue has been selected
 	case gamed.GameRoomStateClueSelected:
-		room, err = c.service.SelectClue(room, session.Player, gamed.SelectClueInput{
+		room, err = c.service.SelectClue(ctx, room, session.Player, gamed.SelectClueInput{
 			Clue:             request.Clue,
 			GuessAmount:      request.GuessAmount,
 			UnlimitedGuesses: request.UnlimitedGuesses,
 		})
 	// Guessing has been stopped prematurely :)
 	case gamed.GameRoomStateGuessingStopped:
-		room, err = c.service.StopGuessing(room, session.Player)
+		room, err = c.service.StopGuessing(ctx, room, session.Player)
 	}
 
 	if err != nil {
@@ -75,6 +78,6 @@ func (c *Controller) PatchGameRoom(gc *gin.Context) {
 		return
 	}
 
-	c.APIResponse(gc, room, 200)
+	c.APIResponse(gc, response.NewGameRoomResponse(room), 200)
 
 }

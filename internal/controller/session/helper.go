@@ -27,7 +27,7 @@ func (c *Controller) GetSessionFromRequest(gc *gin.Context) (*session.Session, e
 
 	// Get the session from the service
 
-	session, err := c.service.GetSession(token)
+	session, err := c.service.GetSession(gc.Request.Context(), token)
 	if err != nil {
 		return nil, http_controller.NewAPIError("Unexpected error when getting the session", err, 500)
 	}

@@ -1,6 +1,7 @@
 package game
 
 import (
+	"context"
 	"time"
 
 	"galere.se/oss-codenames-api/pkg/domain_util"
@@ -8,7 +9,7 @@ import (
 )
 
 // PointTile points to a tile in the game room
-func (s *Service) PointTile(room *GameRoom, actor *Player, tileId int) (*GameRoom, error) {
+func (s *Service) PointTile(ctx context.Context, room *GameRoom, actor *Player, tileId int) (*GameRoom, error) {
 	logrus.Infof("Pointing tile [%d] for game in room [%s] by player [%s]", tileId, room.Id, actor.Name)
 
 	// Validation
@@ -37,7 +38,7 @@ func (s *Service) PointTile(room *GameRoom, actor *Player, tileId int) (*GameRoo
 
 	room.CurrentRound.CurrentTurn.PointedTiles[tileId][actor.Id] = true
 
-	err := s.repository.SaveGameRoom(room)
+	err := s.repository.SaveGameRoom(ctx, room)
 	if err != nil {
 		return nil, domain_util.NewUnexpectedError(err, "failed to save game room for pointing tile")
 	}
@@ -51,7 +52,7 @@ func (s *Service) PointTile(room *GameRoom, actor *Player, tileId int) (*GameRoo
 }
 
 // UnpointTile removes the point from a tile in the game room
-func (s *Service) UnpointTile(room *GameRoom, actor *Player, tileId int) (*GameRoom, error) {
+func (s *Service) UnpointTile(ctx context.Context, room *GameRoom, actor *Player, tileId int) (*GameRoom, error) {
 	logrus.Infof("Unpointing tile [%d] for game in room [%s] by player [%s]", tileId, room.Id, actor.Name)
 
 	// Validation
@@ -77,7 +78,7 @@ func (s *Service) UnpointTile(room *GameRoom, actor *Player, tileId int) (*GameR
 
 	delete(room.CurrentRound.CurrentTurn.PointedTiles[tileId], actor.Id)
 
-	err := s.repository.SaveGameRoom(room)
+	err := s.repository.SaveGameRoom(ctx, room)
 	if err != nil {
 		return nil, domain_util.NewUnexpectedError(err, "failed to save game room for unpointing tile")
 	}
@@ -91,7 +92,7 @@ func (s *Service) UnpointTile(room *GameRoom, actor *Player, tileId int) (*GameR
 }
 
 // GuessTile guesses a tile in the game room
-func (s *Service) GuessTile(room *GameRoom, actor *Player, tileId int) (*GameRoom, error) {
+func (s *Service) GuessTile(ctx context.Context, room *GameRoom, actor *Player, tileId int) (*GameRoom, error) {
 	logrus.Infof("Guessing tile [%d] for game in room [%s] by player [%s]", tileId, room.Id, actor.Name)
 
 	// Validation
@@ -184,7 +185,7 @@ func (s *Service) GuessTile(room *GameRoom, actor *Player, tileId int) (*GameRoo
 		}
 	}
 
-	err := s.repository.SaveGameRoom(room)
+	err := s.repository.SaveGameRoom(ctx, room)
 	if err != nil {
 		return nil, domain_util.NewUnexpectedError(err, "failed to save game room for tile guessing")
 	}

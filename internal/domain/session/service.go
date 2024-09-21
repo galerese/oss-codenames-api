@@ -1,6 +1,8 @@
 package session
 
 import (
+	"context"
+
 	"galere.se/oss-codenames-api/internal/domain/game"
 	"galere.se/oss-codenames-api/pkg/domain_util"
 	"galere.se/oss-codenames-api/pkg/logging"
@@ -20,14 +22,15 @@ func NewService(repository SessionRepository, logger *logging.Logger) *Service {
 }
 
 // Creates a new player session
-func (s *Service) CreateSession() (*Session, error) {
+func (s *Service) CreateSession(ctx context.Context) (*Session, error) {
 	session := &Session{
 		Player: &game.Player{
-			Id: uuid.New().String(),
+			Id:    uuid.New().String(),
+			Token: uuid.New().String(),
 		},
 	}
 
-	session, err := s.SaveSession(session)
+	session, err := s.SaveSession(ctx, session)
 	if err != nil {
 		return nil, domain_util.NewUnexpectedError(err, "failed to save session on session creation")
 	}
@@ -36,11 +39,11 @@ func (s *Service) CreateSession() (*Session, error) {
 }
 
 // Gets a session by token
-func (s *Service) GetSession(token string) (*Session, error) {
-	return s.repository.GetSession(token), nil
+func (s *Service) GetSession(ctx context.Context, token string) (*Session, error) {
+	return s.repository.GetSession(ctx, token)
 }
 
 // Saves a session
-func (s *Service) SaveSession(session *Session) (*Session, error) {
-	return s.repository.SaveSession(session)
+func (s *Service) SaveSession(ctx context.Context, session *Session) (*Session, error) {
+	return s.repository.SaveSession(ctx, session)
 }

@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	gamed "galere.se/oss-codenames-api/internal/domain/game"
+	"galere.se/oss-codenames-api/internal/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,6 +15,8 @@ type PatchGameRoomTileRequest struct {
 }
 
 func (c *Controller) PatchGameRoomTile(gc *gin.Context) {
+
+	ctx := gc.Request.Context()
 
 	//
 	// Validate request context
@@ -69,7 +72,7 @@ func (c *Controller) PatchGameRoomTile(gc *gin.Context) {
 	//
 
 	if request.Guessed != nil && *request.Guessed {
-		room, err = c.service.GuessTile(room, session.Player, tileIdInt)
+		room, err = c.service.GuessTile(ctx, room, session.Player, tileIdInt)
 		if err != nil {
 			c.APIError(gc, "Unexpected error while guessing tile", err, 500)
 			return
@@ -77,7 +80,7 @@ func (c *Controller) PatchGameRoomTile(gc *gin.Context) {
 	}
 
 	if request.Pointed != nil && *request.Pointed {
-		room, err = c.service.PointTile(room, session.Player, tileIdInt)
+		room, err = c.service.PointTile(ctx, room, session.Player, tileIdInt)
 		if err != nil {
 			c.APIError(gc, "Unexpected error while pointing tile", err, 500)
 			return
@@ -85,13 +88,13 @@ func (c *Controller) PatchGameRoomTile(gc *gin.Context) {
 	}
 
 	if request.Pointed != nil && !*request.Pointed {
-		room, err = c.service.UnpointTile(room, session.Player, tileIdInt)
+		room, err = c.service.UnpointTile(ctx, room, session.Player, tileIdInt)
 		if err != nil {
 			c.APIError(gc, "Unexpected error while unpointing tile", err, 500)
 			return
 		}
 	}
 
-	c.APIResponse(gc, room, 200)
+	c.APIResponse(gc, response.NewGameRoomResponse(room), 200)
 
 }

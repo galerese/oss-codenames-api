@@ -1,6 +1,7 @@
 package game
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -11,19 +12,19 @@ import (
 type MockRepository struct {
 }
 
-func (r *MockRepository) GetGameRoomByCode(code string) (*GameRoom, error) {
+func (r *MockRepository) GetGameRoomByCode(ctx context.Context, code string) (*GameRoom, error) {
 	return nil, nil
 }
 
-func (r *MockRepository) GetGameRoomByName(name string) (*GameRoom, error) {
+func (r *MockRepository) GetGameRoomByName(ctx context.Context, name string) (*GameRoom, error) {
 	return nil, nil
 }
 
-func (r *MockRepository) SaveGameRoom(gameRoom *GameRoom) error {
+func (r *MockRepository) SaveGameRoom(ctx context.Context, gameRoom *GameRoom) error {
 	return nil
 }
 
-func (r *MockRepository) GetRandomBoardTiles(count int) (map[int]BoardTile, error) {
+func (r *MockRepository) GetRandomBoardTiles(ctx context.Context, count int) (map[int]BoardTile, error) {
 	return nil, nil
 }
 

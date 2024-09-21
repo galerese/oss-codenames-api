@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"galere.se/oss-codenames-api/internal/domain/game"
+	"galere.se/oss-codenames-api/internal/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,6 +19,8 @@ type PatchGameRoomPlayerRequest struct {
 }
 
 func (c *Controller) PatchGameRoomPlayer(gc *gin.Context) {
+
+	ctx := gc.Request.Context()
 
 	//
 	// Validate request context
@@ -58,14 +61,14 @@ func (c *Controller) PatchGameRoomPlayer(gc *gin.Context) {
 
 	// Spymaster selection
 	if request.Spymaster != nil {
-		room, err := c.service.SetSpymaster(room, session.Player)
+		room, err := c.service.SetSpymaster(ctx, room, session.Player)
 		if err != nil {
 			c.APIError(gc, "Unexpected error while setting spymaster", err, 500)
 			return
 		}
 
 		// Return the updated room
-		c.APIResponse(gc, room, 200)
+		c.APIResponse(gc, response.NewGameRoomResponse(room), 200)
 
 	}
 
@@ -76,14 +79,14 @@ func (c *Controller) PatchGameRoomPlayer(gc *gin.Context) {
 			c.APIError(gc, fmt.Sprintf("Invalid team name provided '%s', please use one of: %s", *request.Team, validTeamNamesString), nil, 400)
 		}
 
-		room, err := c.service.AddPlayerToTeam(room, session.Player, game.TeamName(*request.Team))
+		room, err := c.service.AddPlayerToTeam(ctx, room, session.Player, game.TeamName(*request.Team))
 		if err != nil {
 			c.APIError(gc, "Unexpected error while adding player to team", err, 500)
 			return
 		}
 
 		// Return the updated room
-		c.APIResponse(gc, room, 200)
+		c.APIResponse(gc, response.NewGameRoomResponse(room), 200)
 
 	}
 

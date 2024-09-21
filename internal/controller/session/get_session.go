@@ -1,6 +1,9 @@
 package session
 
-import "github.com/gin-gonic/gin"
+import (
+	"galere.se/oss-codenames-api/internal/response"
+	"github.com/gin-gonic/gin"
+)
 
 func (c *Controller) GetSession(gc *gin.Context) {
 
@@ -10,6 +13,6 @@ func (c *Controller) GetSession(gc *gin.Context) {
 		return
 	}
 
-	c.APIResponse(gc, session, 200)
+	c.APIResponse(gc, response.NewSessionResponse(session), 200)
 
 }

@@ -11,8 +11,8 @@ import (
 	gintrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gin-gonic/gin"
 )
 
-func Bootstrap(handler *gin.Engine, l logging.Logger, appName string) {
-	handler.UseRawPath = true
+func Bootstrap(router *gin.Engine, l logging.Logger, appName string) {
+	router.UseRawPath = true
 
 	l.Info("Bootstrapping gin engine :)")
 
@@ -22,22 +22,22 @@ func Bootstrap(handler *gin.Engine, l logging.Logger, appName string) {
 	}
 
 	// Datadog trace
-	handler.Use(gintrace.Middleware(appName, gintrace.WithAnalytics(true)))
+	router.Use(gintrace.Middleware(appName, gintrace.WithAnalytics(true)))
 
 	// Cors
-	handler.Use(cors.Default())
+	router.Use(cors.Default())
 
 	// Prints incoming requests and results
-	handler.Use(ginzap.Ginzap(l.Desugar(), time.RFC3339, true))
+	router.Use(ginzap.Ginzap(l.Desugar(), time.RFC3339, true))
 
 	// Generic Error handling :)
-	handler.Use(GenericErrorHandler(l))
+	router.Use(GenericErrorHandler(l))
 
 	// Middleware
-	handler.Use(ginzap.RecoveryWithZap(l.Desugar(), true))
+	router.Use(ginzap.RecoveryWithZap(l.Desugar(), true))
 
 	// K8s probe
-	handler.GET("/healthz", func(c *gin.Context) { c.Status(http.StatusOK) })
+	router.GET("/healthz", func(c *gin.Context) { c.Status(http.StatusOK) })
 
 	l.Info("Gin engine bootstrapped!")
 }

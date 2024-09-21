@@ -25,6 +25,7 @@
   },
   "scripts": {
     "bundle": "webpack",
-    "test": "webpack && k6 run dist/game-test.js"
+    "test": "webpack && k6 run dist/game-test.js",
+    "test-single": "webpack && k6 run --vus 1 --duration 1s --iterations 1 dist/game-test.js"
   }
 }

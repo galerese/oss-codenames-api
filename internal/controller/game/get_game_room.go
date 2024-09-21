@@ -1,6 +1,9 @@
 package game
 
-import "github.com/gin-gonic/gin"
+import (
+	"galere.se/oss-codenames-api/internal/response"
+	"github.com/gin-gonic/gin"
+)
 
 // Note: you can only see a game room you are part of!
 func (c *Controller) GetGameRoom(gc *gin.Context) {
@@ -10,11 +13,11 @@ func (c *Controller) GetGameRoom(gc *gin.Context) {
 		return
 	}
 
-	if session.CurrentGameRoom == nil {
+	if session.CurrentRoom == nil {
 		c.APIError(gc, "You can only see details from a room you are currently in!", nil, 403)
 		return
 	}
 
-	c.APIResponse(gc, session.CurrentGameRoom, 200)
+	c.APIResponse(gc, response.NewGameRoomResponse(session.CurrentRoom), 200)
 
 }

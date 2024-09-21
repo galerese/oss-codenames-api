@@ -1,6 +1,7 @@
 package game
 
 import (
+	"context"
 	"math/rand"
 	"time"
 
@@ -25,10 +26,10 @@ func (s *Service) createEmptyGameRound() *GameRound {
 }
 
 // This sets up the game round with the correct number of tiles and identities (by default 25 tiles)
-func (s *Service) initializeGameRound(round *GameRound) (*GameRound, error) {
+func (s *Service) initializeGameRound(ctx context.Context, round *GameRound) (*GameRound, error) {
 
 	// Get random board tiles
-	tiles, err := s.repository.GetRandomBoardTiles(DefaultBoardTileCount) // At some point maybe we make this configurable
+	tiles, err := s.repository.GetRandomBoardTiles(ctx, DefaultBoardTileCount) // At some point maybe we make this configurable
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to get random board tiles")
 	}

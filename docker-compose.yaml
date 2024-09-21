@@ -1,0 +1,37 @@
+services:
+  api:
+    build:
+      context: . 
+      dockerfile: build/Dockerfile
+    ports:
+      - "3033:3033" 
+    restart: no
+    depends_on: 
+      mongo:
+        condition: service_healthy
+    env_file:
+      - .env
+
+  mongo:
+    image: "mongo:latest"
+    ports:
+      - "27017:27017"
+    restart: always
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "--authenticationDatabase",
+          "mongodb://user:pass@mongo:27017/codenames"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 8
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: pass
+volumes:
+  mongo-data:

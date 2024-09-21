@@ -1,6 +1,7 @@
 package game
 
 import (
+	"context"
 	"fmt"
 
 	"galere.se/oss-codenames-api/pkg/domain_util"
@@ -8,7 +9,7 @@ import (
 )
 
 // Adds an existing player to an existing game room
-func (s *Service) AddPlayerToGameRoom(room *GameRoom, player *Player) (*GameRoom, error) {
+func (s *Service) AddPlayerToGameRoom(ctx context.Context, room *GameRoom, player *Player) (*GameRoom, error) {
 	logrus.Infof("Adding player [%s] to game room [%s]", player.Name, room.Name)
 
 	if room.State != GameRoomStateWaitingForPlayers {
@@ -23,7 +24,7 @@ func (s *Service) AddPlayerToGameRoom(room *GameRoom, player *Player) (*GameRoom
 
 	room.Players = append(room.Players, player)
 
-	err := s.repository.SaveGameRoom(room)
+	err := s.repository.SaveGameRoom(ctx, room)
 	if err != nil {
 		return nil, domain_util.NewUnexpectedError(err, "failed to save game room for new player")
 	}
@@ -36,7 +37,7 @@ func (s *Service) AddPlayerToGameRoom(room *GameRoom, player *Player) (*GameRoom
 }
 
 // Updates the player team in a game room
-func (s *Service) AddPlayerToTeam(room *GameRoom, player *Player, team TeamName) (*GameRoom, error) {
+func (s *Service) AddPlayerToTeam(ctx context.Context, room *GameRoom, player *Player, team TeamName) (*GameRoom, error) {
 	logrus.Infof("Updating player [%s] team to [%s] in game room [%s]", player.Name, team, room.Name)
 
 	if room.State != GameRoomStateWaitingForPlayers {
@@ -74,7 +75,7 @@ func (s *Service) AddPlayerToTeam(room *GameRoom, player *Player, team TeamName)
 		room.BlueTeam = append(room.BlueTeam, player)
 	}
 
-	err := s.repository.SaveGameRoom(room)
+	err := s.repository.SaveGameRoom(ctx, room)
 	if err != nil {
 		return nil, domain_util.NewUnexpectedError(err, "failed to save game room for updated player team")
 	}
@@ -87,7 +88,7 @@ func (s *Service) AddPlayerToTeam(room *GameRoom, player *Player, team TeamName)
 }
 
 // Sets the spymaster for the current game round
-func (s *Service) SetSpymaster(room *GameRoom, player *Player) (*GameRoom, error) {
+func (s *Service) SetSpymaster(ctx context.Context, room *GameRoom, player *Player) (*GameRoom, error) {
 	logrus.Infof("Setting spymaster for game in room [%s] to player [%s]", room.Id, player.Name)
 
 	// Validation
@@ -123,7 +124,7 @@ func (s *Service) SetSpymaster(room *GameRoom, player *Player) (*GameRoom, error
 		return nil, domain_util.NewInvalidParameterError(fmt.Sprintf("Unexpected team [%s] provided for spymaster selection!", team))
 	}
 
-	err := s.repository.SaveGameRoom(room)
+	err := s.repository.SaveGameRoom(ctx, room)
 	if err != nil {
 		return nil, domain_util.NewUnexpectedError(err, "failed to save game room when updating spymaster")
 	}
