@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 
+	"galere.se/oss-codenames-api/pkg/domain_util"
 	"github.com/sirupsen/logrus"
 )
 
@@ -55,11 +56,11 @@ func (s *Service) triggerGameRoomEvents(room *GameRoom, eventType GameRoomEvent)
 // Makes sure we have consistent room state :)
 func (s *Service) ensureGameRoundAndTurnExist(room *GameRoom) error {
 	if room.CurrentRound == nil {
-		return NewUnexpectedError(nil, "Expected a game round to be created already!")
+		return domain_util.NewUnexpectedError(nil, "Expected a game round to be created already!")
 	}
 
 	if room.CurrentRound.CurrentTurn == nil {
-		return NewUnexpectedError(nil, "Expected a game turn to be created already!")
+		return domain_util.NewUnexpectedError(nil, "Expected a game turn to be created already!")
 	}
 
 	return nil

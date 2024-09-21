@@ -11,8 +11,10 @@ import (
 	gintrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gin-gonic/gin"
 )
 
-func Bootstrap(handler *gin.Engine, l logging.Logger) {
+func Bootstrap(handler *gin.Engine, l logging.Logger, appName string) {
 	handler.UseRawPath = true
+
+	l.Info("Bootstrapping gin engine :)")
 
 	// Debug print all routes using zap
 	gin.DebugPrintRouteFunc = func(httpMethod, absolutePath, handlerName string, nuHandlers int) {
@@ -20,7 +22,7 @@ func Bootstrap(handler *gin.Engine, l logging.Logger) {
 	}
 
 	// Datadog trace
-	handler.Use(gintrace.Middleware("oss-codenames-api", gintrace.WithAnalytics(true)))
+	handler.Use(gintrace.Middleware(appName, gintrace.WithAnalytics(true)))
 
 	// Cors
 	handler.Use(cors.Default())
@@ -36,4 +38,6 @@ func Bootstrap(handler *gin.Engine, l logging.Logger) {
 
 	// K8s probe
 	handler.GET("/healthz", func(c *gin.Context) { c.Status(http.StatusOK) })
+
+	l.Info("Gin engine bootstrapped!")
 }

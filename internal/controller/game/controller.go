@@ -13,7 +13,7 @@ type Controller struct {
 	*sc.Controller
 }
 
-func NewController(service *game.Service, sessionService *session.Service, logger logging.Logger) *Controller {
+func NewController(service *game.Service, sessionService *session.Service, logger *logging.Logger) *Controller {
 	return &Controller{
 		service:        service,
 		sessionService: sessionService,

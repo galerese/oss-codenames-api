@@ -8,16 +8,16 @@ import (
 
 // This acts as a base controller for all controllers, with common functions
 type BaseController struct {
-	Logger logging.Logger
+	Logger *logging.Logger
 }
 
-func NewBaseController(l logging.Logger) *BaseController {
+func NewBaseController(l *logging.Logger) *BaseController {
 	return &BaseController{Logger: l}
 }
 
 // This function is used to emit API errors with specific status codes
 func (c *BaseController) APIError(gc *gin.Context, msgError string, originalError error, status int) {
-	gc.Error(NewAPIError(msgError, status))
+	gc.Error(NewAPIError(msgError, originalError, status))
 }
 
 func (c *BaseController) APIResponse(gc *gin.Context, response interface{}, status int) {

@@ -3,6 +3,8 @@ package game
 import (
 	"fmt"
 	"time"
+
+	"galere.se/oss-codenames-api/pkg/domain_util"
 )
 
 func (s *Service) startNewGameTurn(room *GameRoom) (*GameRoom, error) {
@@ -18,7 +20,7 @@ func (s *Service) startNewGameTurn(room *GameRoom) (*GameRoom, error) {
 	newTurn.CurrentTeam = lastTurn.OtherTeam()
 
 	if newTurn.CurrentTeam == "" {
-		return nil, NewUnexpectedError(nil, fmt.Sprintf("Unexpected team name for new turn: %s", lastTurn.CurrentTeam))
+		return nil, domain_util.NewUnexpectedError(nil, fmt.Sprintf("Unexpected team name for new turn: %s", lastTurn.CurrentTeam))
 	}
 
 	// Set new turn and adjust history :)

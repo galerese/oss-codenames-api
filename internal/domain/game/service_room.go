@@ -3,19 +3,10 @@ package game
 import (
 	"fmt"
 
+	"galere.se/oss-codenames-api/pkg/domain_util"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
-
-type Service struct {
-	repository GameRepository
-}
-
-func NewService(repository GameRepository) *Service {
-	return &Service{
-		repository: repository,
-	}
-}
 
 // Gets a get game room by its code
 func (s *Service) GetGameRoomByCode(code string) (*GameRoom, error) {
@@ -53,11 +44,11 @@ func (s *Service) StartGame(room *GameRoom, actor *Player) (*GameRoom, error) {
 	// Validation
 
 	if room.State != GameRoomStateWaitingForPlayers {
-		return nil, NewStateValidationError("You may not start the game because it has already started!")
+		return nil, domain_util.NewStateValidationError("You may not start the game because it has already started!")
 	}
 
 	if len(room.RedTeam) < 2 || len(room.BlueTeam) < 2 {
-		return nil, NewStateValidationError("There must be at least 2 players on each team to start the game!")
+		return nil, domain_util.NewStateValidationError("There must be at least 2 players on each team to start the game!")
 	}
 
 	// Logic
@@ -67,7 +58,7 @@ func (s *Service) StartGame(room *GameRoom, actor *Player) (*GameRoom, error) {
 
 	err := s.repository.SaveGameRoom(room)
 	if err != nil {
-		return nil, NewUnexpectedError(err, "failed to save game room for starting the game")
+		return nil, domain_util.NewUnexpectedError(err, "failed to save game room for starting the game")
 	}
 
 	// Wrap up
@@ -87,15 +78,15 @@ func (s *Service) SettleSpymasters(room *GameRoom, actor *Player) (*GameRoom, er
 	// Validation
 
 	if room.State != GameRoomStateSelectSpymasters {
-		return nil, NewStateValidationError("A game round has already begun, you cannot change spymasters before it ends!")
+		return nil, domain_util.NewStateValidationError("A game round has already begun, you cannot change spymasters before it ends!")
 	}
 
 	if room.CurrentRound == nil {
-		return nil, NewUnexpectedError(nil, "Expected a game round to be created already before selecting spymasters!")
+		return nil, domain_util.NewUnexpectedError(nil, "Expected a game round to be created already before selecting spymasters!")
 	}
 
 	if room.CurrentRound.RedSpymaster != nil && room.CurrentRound.BlueSpymaster != nil {
-		return nil, NewUnexpectedError(nil, "Please wait until both spymasters have been selected to start the game!")
+		return nil, domain_util.NewUnexpectedError(nil, "Please wait until both spymasters have been selected to start the game!")
 	}
 
 	// Logic
@@ -105,12 +96,12 @@ func (s *Service) SettleSpymasters(room *GameRoom, actor *Player) (*GameRoom, er
 	var err error
 	room.CurrentRound, err = s.initializeGameRound(room.CurrentRound)
 	if err != nil {
-		return nil, NewUnexpectedError(err, "Failed to initialize game round after spymasters have been selected :(")
+		return nil, domain_util.NewUnexpectedError(err, "Failed to initialize game round after spymasters have been selected :(")
 	}
 
 	err = s.repository.SaveGameRoom(room)
 	if err != nil {
-		return nil, NewUnexpectedError(err, "failed to save game room for spymaster selection")
+		return nil, domain_util.NewUnexpectedError(err, "failed to save game room for spymaster selection")
 	}
 
 	// Wrap up
@@ -135,15 +126,15 @@ func (s *Service) SelectClue(room *GameRoom, actor *Player, input SelectClueInpu
 	// Validation
 
 	if room.State != GameRoomStateSelectClue {
-		return nil, NewStateValidationError("It's not currently time to select a clue!")
+		return nil, domain_util.NewStateValidationError("It's not currently time to select a clue!")
 	}
 
 	if room.CurrentRound == nil {
-		return nil, NewUnexpectedError(nil, "Expected a game round to be created already before selecting a clue!")
+		return nil, domain_util.NewUnexpectedError(nil, "Expected a game round to be created already before selecting a clue!")
 	}
 
 	if room.CurrentRound.CurrentTurn == nil {
-		return nil, NewUnexpectedError(nil, "Expected a game turn to be created already before selecting a clue!")
+		return nil, domain_util.NewUnexpectedError(nil, "Expected a game turn to be created already before selecting a clue!")
 	}
 
 	// Validate the current team's spymaster is the actor
@@ -154,17 +145,17 @@ func (s *Service) SelectClue(room *GameRoom, actor *Player, input SelectClueInpu
 	}
 
 	if currentSpymaster.Id != actor.Id {
-		return nil, NewInvalidActionError(fmt.Sprintf("Only the current team's spymaster can select the clue! That is '%s'.", currentSpymaster.Name))
+		return nil, domain_util.NewInvalidActionError(fmt.Sprintf("Only the current team's spymaster can select the clue! That is '%s'.", currentSpymaster.Name))
 	}
 
 	// Validate the clue is not empty
 
 	if len(input.Clue) == 0 || len(input.Clue) > MaxClueLength {
-		return nil, NewInvalidParameterError(fmt.Sprintf("You must select a clue with up to %d characters!", MaxClueLength))
+		return nil, domain_util.NewInvalidParameterError(fmt.Sprintf("You must select a clue with up to %d characters!", MaxClueLength))
 	}
 
 	if !input.UnlimitedGuesses && (input.GuessAmount < 1 || input.GuessAmount > MaxGuessAmount) {
-		return nil, NewInvalidParameterError(fmt.Sprintf("You must select a guess amount between 1 and %d!", MaxGuessAmount))
+		return nil, domain_util.NewInvalidParameterError(fmt.Sprintf("You must select a guess amount between 1 and %d!", MaxGuessAmount))
 	}
 
 	// Logic
@@ -178,7 +169,7 @@ func (s *Service) SelectClue(room *GameRoom, actor *Player, input SelectClueInpu
 
 	err := s.repository.SaveGameRoom(room)
 	if err != nil {
-		return nil, NewUnexpectedError(err, "failed to save game room for selecting clue")
+		return nil, domain_util.NewUnexpectedError(err, "failed to save game room for selecting clue")
 	}
 
 	// Wrap up
@@ -200,15 +191,15 @@ func (s *Service) StopGuessing(room *GameRoom, actor *Player) (*GameRoom, error)
 	// Validation
 
 	if room.State != GameRoomStateSelectGuess {
-		return nil, NewStateValidationError("You cannot currently stop guessing because the game is not in the guessing phase!")
+		return nil, domain_util.NewStateValidationError("You cannot currently stop guessing because the game is not in the guessing phase!")
 	}
 
 	if room.CurrentRound == nil {
-		return nil, NewUnexpectedError(nil, "Expected a game round to be created already before stopping guessing!")
+		return nil, domain_util.NewUnexpectedError(nil, "Expected a game round to be created already before stopping guessing!")
 	}
 
 	if room.CurrentRound.CurrentTurn == nil {
-		return nil, NewUnexpectedError(nil, "Expected a game turn to be created already before stopping guessing!")
+		return nil, domain_util.NewUnexpectedError(nil, "Expected a game turn to be created already before stopping guessing!")
 	}
 
 	// Logic
@@ -220,7 +211,7 @@ func (s *Service) StopGuessing(room *GameRoom, actor *Player) (*GameRoom, error)
 
 	err = s.repository.SaveGameRoom(room)
 	if err != nil {
-		return nil, NewUnexpectedError(err, "failed to save game room for stopping guessing")
+		return nil, domain_util.NewUnexpectedError(err, "failed to save game room for stopping guessing")
 	}
 
 	// Wrap up

@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"galere.se/oss-codenames-api/pkg/logging"
 	"github.com/stretchr/testify/require"
 )
 
@@ -29,8 +30,9 @@ func (r *MockRepository) GetRandomBoardTiles(count int) (map[int]BoardTile, erro
 func Test_generateRandomGameRoomName(t *testing.T) {
 
 	assert := require.New(t)
+	logger := logging.New("debug", "console")
 
-	service := NewService(&MockRepository{})
+	service := NewService(&MockRepository{}, &logger)
 
 	names := map[string]bool{}
 

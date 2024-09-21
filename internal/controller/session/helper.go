@@ -15,12 +15,12 @@ func (c *Controller) GetSessionFromRequest(gc *gin.Context) (*session.Session, e
 
 	authorization := gc.GetHeader("Authorization")
 	if authorization == "" {
-		return nil, http_controller.NewAPIError("Authorization header is required to get a session", 401)
+		return nil, http_controller.NewAPIError("Authorization header is required to get a session", nil, 401)
 	}
 
 	parts := strings.Split(authorization, " ")
 	if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-		return nil, http_controller.NewAPIError("Authorization header must be in the format 'Bearer <token>'", 400)
+		return nil, http_controller.NewAPIError("Authorization header must be in the format 'Bearer <token>'", nil, 400)
 	}
 
 	token := parts[1]
@@ -29,7 +29,7 @@ func (c *Controller) GetSessionFromRequest(gc *gin.Context) (*session.Session, e
 
 	session, err := c.service.GetSession(token)
 	if err != nil {
-		return nil, http_controller.NewAPIError("Unexpected error when getting the session", 500)
+		return nil, http_controller.NewAPIError("Unexpected error when getting the session", err, 500)
 	}
 
 	return session, nil

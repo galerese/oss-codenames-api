@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 
+	"galere.se/oss-codenames-api/pkg/domain_util"
 	"github.com/sirupsen/logrus"
 )
 
@@ -11,7 +12,7 @@ func (s *Service) AddPlayerToGameRoom(room *GameRoom, player *Player) (*GameRoom
 	logrus.Infof("Adding player [%s] to game room [%s]", player.Name, room.Name)
 
 	if room.State != GameRoomStateWaitingForPlayers {
-		return nil, NewStateValidationError("The game has already started, new players may not join now!")
+		return nil, domain_util.NewStateValidationError("The game has already started, new players may not join now!")
 	}
 
 	// Nothing to do if the player is already in the room :)
@@ -24,7 +25,7 @@ func (s *Service) AddPlayerToGameRoom(room *GameRoom, player *Player) (*GameRoom
 
 	err := s.repository.SaveGameRoom(room)
 	if err != nil {
-		return nil, NewUnexpectedError(err, "failed to save game room for new player")
+		return nil, domain_util.NewUnexpectedError(err, "failed to save game room for new player")
 	}
 
 	logrus.Infof("Added player [%s] to game room [%s]", player.Name, room.Name)
@@ -39,7 +40,7 @@ func (s *Service) AddPlayerToTeam(room *GameRoom, player *Player, team TeamName)
 	logrus.Infof("Updating player [%s] team to [%s] in game room [%s]", player.Name, team, room.Name)
 
 	if room.State != GameRoomStateWaitingForPlayers {
-		return nil, NewStateValidationError("The game has already started, you may not select your team at the moment!")
+		return nil, domain_util.NewStateValidationError("The game has already started, you may not select your team at the moment!")
 	}
 
 	// Remove player from the other team if needed, or return early if the player is already in the desired team
@@ -75,7 +76,7 @@ func (s *Service) AddPlayerToTeam(room *GameRoom, player *Player, team TeamName)
 
 	err := s.repository.SaveGameRoom(room)
 	if err != nil {
-		return nil, NewUnexpectedError(err, "failed to save game room for updated player team")
+		return nil, domain_util.NewUnexpectedError(err, "failed to save game room for updated player team")
 	}
 
 	logrus.Infof("Updated player [%s] team to [%s] in game room [%s]", player.Name, team, room.Name)
@@ -92,16 +93,16 @@ func (s *Service) SetSpymaster(room *GameRoom, player *Player) (*GameRoom, error
 	// Validation
 
 	if room.State != GameRoomStateSelectSpymasters {
-		return nil, NewStateValidationError("It's not currently time to select spymasters! You can only do this right before the game starts.")
+		return nil, domain_util.NewStateValidationError("It's not currently time to select spymasters! You can only do this right before the game starts.")
 	}
 
 	if room.CurrentRound == nil {
-		return nil, NewUnexpectedError(nil, "Expected a game round to be created already before selecting spymasters!")
+		return nil, domain_util.NewUnexpectedError(nil, "Expected a game round to be created already before selecting spymasters!")
 	}
 
 	team := room.getPlayerTeam(player)
 	if team == "" {
-		return nil, NewInvalidActionError("Provided player is not in the game room!")
+		return nil, domain_util.NewInvalidActionError("Provided player is not in the game room!")
 	}
 
 	// Setting the spymaster
@@ -119,12 +120,12 @@ func (s *Service) SetSpymaster(room *GameRoom, player *Player) (*GameRoom, error
 		room.CurrentRound.BlueSpymaster = player
 
 	default:
-		return nil, NewInvalidParameterError(fmt.Sprintf("Unexpected team [%s] provided for spymaster selection!", team))
+		return nil, domain_util.NewInvalidParameterError(fmt.Sprintf("Unexpected team [%s] provided for spymaster selection!", team))
 	}
 
 	err := s.repository.SaveGameRoom(room)
 	if err != nil {
-		return nil, NewUnexpectedError(err, "failed to save game room when updating spymaster")
+		return nil, domain_util.NewUnexpectedError(err, "failed to save game room when updating spymaster")
 	}
 
 	logrus.Infof("Set spymaster for game in room [%s] and player [%s] on team [%s]", room.Id, player.Name, team)

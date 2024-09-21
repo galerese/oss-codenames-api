@@ -11,7 +11,7 @@ type Controller struct {
 	*http_controller.BaseController
 }
 
-func NewController(service *session.Service, logger logging.Logger) *Controller {
+func NewController(service *session.Service, logger *logging.Logger) *Controller {
 	return &Controller{
 		service:        service,
 		BaseController: http_controller.NewBaseController(logger),

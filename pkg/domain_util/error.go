@@ -1,4 +1,4 @@
-package game
+package domain_util
 
 import "github.com/pkg/errors"
 

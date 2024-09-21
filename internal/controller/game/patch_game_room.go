@@ -12,8 +12,8 @@ type PatchGameRoomRequest struct {
 	State string `json:"state"`
 	// Only used when state is "SELECT_CLUE"
 	Clue             string `json:"clue"`
-	GuessAmount      int    `json:"guess_amount"`
-	UnlimitedGuesses bool   `json:"unlimited_guesses"`
+	GuessAmount      int    `json:"guessAmount"`
+	UnlimitedGuesses bool   `json:"unlimitedGuesses"`
 }
 
 var validGameRoomTransitionStates = []string{

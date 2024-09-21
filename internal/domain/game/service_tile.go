@@ -3,6 +3,7 @@ package game
 import (
 	"time"
 
+	"galere.se/oss-codenames-api/pkg/domain_util"
 	"github.com/sirupsen/logrus"
 )
 
@@ -12,15 +13,15 @@ func (s *Service) PointTile(room *GameRoom, actor *Player, tileId int) (*GameRoo
 
 	// Validation
 	if room.State != GameRoomStateSelectGuess {
-		return nil, NewStateValidationError("You can only point to tiles during your team's guessing phase!")
+		return nil, domain_util.NewStateValidationError("You can only point to tiles during your team's guessing phase!")
 	}
 
 	if room.CurrentRound == nil {
-		return nil, NewUnexpectedError(nil, "Expected a game round to be created already before pointing a tile!")
+		return nil, domain_util.NewUnexpectedError(nil, "Expected a game round to be created already before pointing a tile!")
 	}
 
 	if room.CurrentRound.CurrentTurn == nil {
-		return nil, NewUnexpectedError(nil, "Expected a game turn to be created already before pointing a tile!")
+		return nil, domain_util.NewUnexpectedError(nil, "Expected a game turn to be created already before pointing a tile!")
 	}
 
 	// Logic
@@ -38,7 +39,7 @@ func (s *Service) PointTile(room *GameRoom, actor *Player, tileId int) (*GameRoo
 
 	err := s.repository.SaveGameRoom(room)
 	if err != nil {
-		return nil, NewUnexpectedError(err, "failed to save game room for pointing tile")
+		return nil, domain_util.NewUnexpectedError(err, "failed to save game room for pointing tile")
 	}
 
 	// Wrap up
@@ -55,15 +56,15 @@ func (s *Service) UnpointTile(room *GameRoom, actor *Player, tileId int) (*GameR
 
 	// Validation
 	if room.State != GameRoomStateSelectGuess {
-		return nil, NewStateValidationError("You can only unpoint a tile during your team's guessing phase!")
+		return nil, domain_util.NewStateValidationError("You can only unpoint a tile during your team's guessing phase!")
 	}
 
 	if room.CurrentRound == nil {
-		return nil, NewUnexpectedError(nil, "Expected a game round to be created already before unpointing a tile!")
+		return nil, domain_util.NewUnexpectedError(nil, "Expected a game round to be created already before unpointing a tile!")
 	}
 
 	if room.CurrentRound.CurrentTurn == nil {
-		return nil, NewUnexpectedError(nil, "Expected a game turn to be created already before unpointing a tile!")
+		return nil, domain_util.NewUnexpectedError(nil, "Expected a game turn to be created already before unpointing a tile!")
 	}
 
 	// Logic
@@ -78,7 +79,7 @@ func (s *Service) UnpointTile(room *GameRoom, actor *Player, tileId int) (*GameR
 
 	err := s.repository.SaveGameRoom(room)
 	if err != nil {
-		return nil, NewUnexpectedError(err, "failed to save game room for unpointing tile")
+		return nil, domain_util.NewUnexpectedError(err, "failed to save game room for unpointing tile")
 	}
 
 	// Wrap up
@@ -95,20 +96,20 @@ func (s *Service) GuessTile(room *GameRoom, actor *Player, tileId int) (*GameRoo
 
 	// Validation
 	if room.State != GameRoomStateSelectGuess {
-		return nil, NewStateValidationError("You can only make guesses during your team's guessing phase!")
+		return nil, domain_util.NewStateValidationError("You can only make guesses during your team's guessing phase!")
 	}
 
 	if room.CurrentRound == nil {
-		return nil, NewUnexpectedError(nil, "Expected a game round to be created already before guessing a tile!")
+		return nil, domain_util.NewUnexpectedError(nil, "Expected a game round to be created already before guessing a tile!")
 	}
 
 	if room.CurrentRound.CurrentTurn == nil {
-		return nil, NewUnexpectedError(nil, "Expected a game turn to be created already before guessing a tile!")
+		return nil, domain_util.NewUnexpectedError(nil, "Expected a game turn to be created already before guessing a tile!")
 	}
 
 	// Tile has already been guessed :o
 	if room.CurrentRound.GuessedTiles[tileId] {
-		return nil, NewInvalidParameterError("This tile has already been guessed!")
+		return nil, domain_util.NewInvalidParameterError("This tile has already been guessed!")
 	}
 
 	// Logic
@@ -185,11 +186,15 @@ func (s *Service) GuessTile(room *GameRoom, actor *Player, tileId int) (*GameRoo
 
 	err := s.repository.SaveGameRoom(room)
 	if err != nil {
-		return nil, NewUnexpectedError(err, "failed to save game room for tile guessing")
+		return nil, domain_util.NewUnexpectedError(err, "failed to save game room for tile guessing")
 	}
 
 	// Wrap up
 	s.triggerGameRoomEvents(room, GameRoomEventTileGuessed)
+
+	if shouldStartNewTurn || room.State == GameRoomStateRoundEnded {
+		s.triggerGameRoomEvents(room, GameRoomEventTurnEnded)
+	}
 
 	if room.State == GameRoomStateRoundEnded {
 		s.triggerGameRoomEvents(room, GameRoomEventRoundEnded)

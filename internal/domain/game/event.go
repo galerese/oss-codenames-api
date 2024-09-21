@@ -12,6 +12,7 @@ const (
 	GameRoomEventGuessingStopped   GameRoomEvent = "GUESSING_STOPPED"
 	GameRoomEventTeamSelected      GameRoomEvent = "TEAM_SELECTED"
 	GameRoomEventPlayerJoined      GameRoomEvent = "PLAYER_JOINED"
+	GameRoomEventTurnEnded         GameRoomEvent = "TURN_ENDED"
 
 	GameRoomEventTilePointed   GameRoomEvent = "TILE_POINTED"
 	GameRoomEventTileUnpointed GameRoomEvent = "TILE_UNPOINTED"
