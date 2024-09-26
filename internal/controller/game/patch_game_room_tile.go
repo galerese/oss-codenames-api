@@ -48,12 +48,9 @@ func (c *Controller) PatchGameRoomTile(gc *gin.Context) {
 	//
 
 	request := PatchGameRoomTileRequest{}
-	if c.ParseBody(gc, &request) != nil {
-		return
-	}
-
-	if request.Pointed == nil && request.Guessed == nil {
-		c.APIError(gc, "You must set either 'pointed' or 'guessed' on this tile", nil, 400)
+	err = c.ParseBody(gc, &request)
+	if err != nil || request.Pointed == nil && request.Guessed == nil {
+		c.APIError(gc, "You must set either 'pointed' or 'guessed' on this tile", err, 400)
 		return
 	}
 

@@ -20,7 +20,6 @@ type GameRoomResponse struct {
 	Players      []*PublicPlayerResponse `json:"players"`
 	CurrentRound *GameRoundResponse      `json:"currentRound"`
 	RoundHistory []*GameRoundResponse    `json:"roundHistory"`
-	RoomCode     int                     `json:"roomCode"`
 }
 
 type GameRoundResponse struct {
@@ -76,7 +75,6 @@ func NewGameRoomResponse(gameRoom *game.GameRoom) *GameRoomResponse {
 		Players:      mapPublicPlayersResponse(gameRoom.Players),
 		CurrentRound: NewGameRoundResponse(gameRoom.CurrentRound),
 		RoundHistory: mapGameRoundsResponse(gameRoom.RoundHistory),
-		RoomCode:     gameRoom.RoomCode,
 	}
 
 	return response

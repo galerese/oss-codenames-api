@@ -3,16 +3,12 @@ package game
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"galere.se/oss-codenames-api/pkg/domain_util"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
-
-// Gets a get game room by its code
-func (s *Service) GetGameRoomByCode(ctx context.Context, code string) (*GameRoom, error) {
-	return s.repository.GetGameRoomByCode(ctx, code)
-}
 
 // Gets a get game room by its name
 func (s *Service) GetGameRoomByName(ctx context.Context, name string) (*GameRoom, error) {
@@ -21,11 +17,18 @@ func (s *Service) GetGameRoomByName(ctx context.Context, name string) (*GameRoom
 
 // Creates a game room with a random name
 func (s *Service) CreateGameRoom(ctx context.Context, actor *Player) (*GameRoom, error) {
-	logrus.Infof("Creating new game room for player [%s]", actor.Name)
+	s.baseService.Logger.Infof("Creating new game room for player [%s]", actor.Name)
 
 	room := &GameRoom{
-		State:   GameRoomStateWaitingForPlayers,
-		Players: []*Player{actor},
+		Id:           uuid.NewString(),
+		Name:         s.generateRandomGameRoomName(),
+		CreatedAt:    time.Now(),
+		State:        GameRoomStateWaitingForPlayers,
+		Players:      []*Player{actor},
+		RedTeam:      []*Player{},
+		BlueTeam:     []*Player{},
+		CurrentRound: nil,
+		RoundHistory: []*GameRound{},
 	}
 
 	err := s.repository.SaveGameRoom(ctx, room)
@@ -33,14 +36,14 @@ func (s *Service) CreateGameRoom(ctx context.Context, actor *Player) (*GameRoom,
 		return nil, errors.Wrap(err, "failed to save new game room")
 	}
 
-	logrus.Infof("Created new game room [%s] for player [%s]", room.Name, actor.Name)
+	s.baseService.Logger.Infof("Created new game room [%s] for player [%s]", room.Name, actor.Name)
 
 	return room, nil
 }
 
 // Settle teams and start the game!
 func (s *Service) StartGame(ctx context.Context, room *GameRoom, actor *Player) (*GameRoom, error) {
-	logrus.Infof("Starting game in room [%s] for player [%s]", room.Id, actor.Name)
+	s.baseService.Logger.Infof("Starting game in room [%s] for player [%s]", room.Id, actor.Name)
 
 	// Validation
 
@@ -67,14 +70,14 @@ func (s *Service) StartGame(ctx context.Context, room *GameRoom, actor *Player) 
 	s.triggerGameRoomEvents(room, GameRoomEventGameStarted)
 	s.triggerGameRoomEvents(room, GameRoomEventRoundStarted)
 
-	logrus.Infof("Started game in room [%s] for player [%s], state [%s]", room.Id, actor.Name, room.State)
+	s.baseService.Logger.Infof("Started game in room [%s] for player [%s], state [%s]", room.Id, actor.Name, room.State)
 
 	return room, nil
 }
 
 // Spymasters have been selected, start the game!
 func (s *Service) SettleSpymasters(ctx context.Context, room *GameRoom, actor *Player) (*GameRoom, error) {
-	logrus.Infof("Spymasters selection indicated for game in room [%s] by player [%s]", room.Id, actor.Name)
+	s.baseService.Logger.Infof("Spymasters selection indicated for game in room [%s] by player [%s]", room.Id, actor.Name)
 
 	// Validation
 
@@ -109,7 +112,7 @@ func (s *Service) SettleSpymasters(ctx context.Context, room *GameRoom, actor *P
 
 	s.triggerGameRoomEvents(room, GameRoomEventSpymasterSelected)
 
-	logrus.Infof("Spymasters selection indicated for game in room [%s] by player [%s], state [%s]", room.Id, actor.Name, room.State)
+	s.baseService.Logger.Infof("Spymasters selection indicated for game in room [%s] by player [%s], state [%s]", room.Id, actor.Name, room.State)
 
 	return room, nil
 }
@@ -122,7 +125,7 @@ type SelectClueInput struct {
 
 // A clue has been selected, start the guessing!
 func (s *Service) SelectClue(ctx context.Context, room *GameRoom, actor *Player, input SelectClueInput) (*GameRoom, error) {
-	logrus.Infof("Selecting clue for game in room [%s] by player [%s]", room.Id, actor.Name)
+	s.baseService.Logger.Infof("Selecting clue for game in room [%s] by player [%s]", room.Id, actor.Name)
 
 	// Validation
 
@@ -177,7 +180,7 @@ func (s *Service) SelectClue(ctx context.Context, room *GameRoom, actor *Player,
 
 	s.triggerGameRoomEvents(room, GameRoomEventClueSelected)
 
-	logrus.Infof("Selected clue [%s] with [%d] guesses and unlimited guesses [%t] for game in room [%s] by player [%s], state [%s]",
+	s.baseService.Logger.Infof("Selected clue [%s] with [%d] guesses and unlimited guesses [%t] for game in room [%s] by player [%s], state [%s]",
 		currentTurn.Clue, currentTurn.GuessAmount, currentTurn.UnlimitedGuesses, room.Id, actor.Name, room.State)
 
 	return room, nil
@@ -187,7 +190,7 @@ func (s *Service) SelectClue(ctx context.Context, room *GameRoom, actor *Player,
 // Guessing has been stopped prematurely, proceed :)
 func (s *Service) StopGuessing(ctx context.Context, room *GameRoom, actor *Player) (*GameRoom, error) {
 
-	logrus.Infof("Stopping guessing for game in room [%s] by player [%s]", room.Id, actor.Name)
+	s.baseService.Logger.Infof("Stopping guessing for game in room [%s] by player [%s]", room.Id, actor.Name)
 
 	// Validation
 
@@ -219,7 +222,7 @@ func (s *Service) StopGuessing(ctx context.Context, room *GameRoom, actor *Playe
 
 	s.triggerGameRoomEvents(room, GameRoomEventGuessingStopped)
 
-	logrus.Infof("Stopped guessing for game in room [%s] by player [%s], state [%s]", room.Id, actor.Name, room.State)
+	s.baseService.Logger.Infof("Stopped guessing for game in room [%s] by player [%s], state [%s]", room.Id, actor.Name, room.State)
 
 	return room, nil
 

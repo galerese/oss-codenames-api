@@ -45,8 +45,9 @@ func (c *Controller) PatchGameRoomPlayer(gc *gin.Context) {
 	//
 
 	request := PatchGameRoomPlayerRequest{}
-	if c.ParseBody(gc, &request) != nil || (request.Spymaster == nil && request.Team == nil) {
-		c.APIError(gc, "A request body with either 'team' or 'spymaster' is required", nil, 400)
+	err := c.ParseBody(gc, &request)
+	if err != nil || (request.Spymaster == nil && request.Team == nil) {
+		c.APIError(gc, "A request body with either 'team' or 'spymaster' is required", err, 400)
 		return
 	}
 

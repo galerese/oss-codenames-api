@@ -18,7 +18,13 @@ func (c *Controller) EnsureSessionHasGameRoom(gc *gin.Context) (*game.GameRoom, 
 		return nil, nil
 	}
 
-	return session.CurrentRoom, session
+	room, err := c.service.GetGameRoomByName(gc.Request.Context(), session.CurrentRoom.Name)
+	if err != nil {
+		c.APIError(gc, "Unexpected error when getting game room by name", err, 500)
+		return nil, nil
+	}
+
+	return room, session
 }
 
 func (c *Controller) EnsureSessionPlayerIsInPathRoomByName(gc *gin.Context) (*game.GameRoom, *session.Session) {

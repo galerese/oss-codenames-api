@@ -5,12 +5,11 @@ import (
 	"time"
 
 	"galere.se/oss-codenames-api/pkg/domain_util"
-	"github.com/sirupsen/logrus"
 )
 
 // PointTile points to a tile in the game room
 func (s *Service) PointTile(ctx context.Context, room *GameRoom, actor *Player, tileId int) (*GameRoom, error) {
-	logrus.Infof("Pointing tile [%d] for game in room [%s] by player [%s]", tileId, room.Id, actor.Name)
+	s.baseService.Logger.Infof("Pointing tile [%d] for game in room [%s] by player [%s]", tileId, room.Id, actor.Name)
 
 	// Validation
 	if room.State != GameRoomStateSelectGuess {
@@ -46,14 +45,14 @@ func (s *Service) PointTile(ctx context.Context, room *GameRoom, actor *Player, 
 	// Wrap up
 	s.triggerGameRoomEvents(room, GameRoomEventTilePointed)
 
-	logrus.Infof("Pointed tile [%d] for game in room [%s] by player [%s], state [%s]", tileId, room.Id, actor.Name, room.State)
+	s.baseService.Logger.Infof("Pointed tile [%d] for game in room [%s] by player [%s], state [%s]", tileId, room.Id, actor.Name, room.State)
 
 	return room, nil
 }
 
 // UnpointTile removes the point from a tile in the game room
 func (s *Service) UnpointTile(ctx context.Context, room *GameRoom, actor *Player, tileId int) (*GameRoom, error) {
-	logrus.Infof("Unpointing tile [%d] for game in room [%s] by player [%s]", tileId, room.Id, actor.Name)
+	s.baseService.Logger.Infof("Unpointing tile [%d] for game in room [%s] by player [%s]", tileId, room.Id, actor.Name)
 
 	// Validation
 	if room.State != GameRoomStateSelectGuess {
@@ -86,14 +85,14 @@ func (s *Service) UnpointTile(ctx context.Context, room *GameRoom, actor *Player
 	// Wrap up
 	s.triggerGameRoomEvents(room, GameRoomEventTilePointed)
 
-	logrus.Infof("unpointed tile [%d] for game in room [%s] by player [%s], state [%s]", tileId, room.Id, actor.Name, room.State)
+	s.baseService.Logger.Infof("unpointed tile [%d] for game in room [%s] by player [%s], state [%s]", tileId, room.Id, actor.Name, room.State)
 
 	return room, nil
 }
 
 // GuessTile guesses a tile in the game room
 func (s *Service) GuessTile(ctx context.Context, room *GameRoom, actor *Player, tileId int) (*GameRoom, error) {
-	logrus.Infof("Guessing tile [%d] for game in room [%s] by player [%s]", tileId, room.Id, actor.Name)
+	s.baseService.Logger.Infof("Guessing tile [%d] for game in room [%s] by player [%s]", tileId, room.Id, actor.Name)
 
 	// Validation
 	if room.State != GameRoomStateSelectGuess {
@@ -201,7 +200,7 @@ func (s *Service) GuessTile(ctx context.Context, room *GameRoom, actor *Player, 
 		s.triggerGameRoomEvents(room, GameRoomEventRoundEnded)
 	}
 
-	logrus.Infof("Guessed tile [%s] for game in room [%s] by player [%s], state [%s]", tileId, room.Id, actor.Name, room.State)
+	s.baseService.Logger.Infof("Guessed tile [%s] for game in room [%s] by player [%s], state [%s]", tileId, room.Id, actor.Name, room.State)
 
 	return room, nil
 }

@@ -5,12 +5,11 @@ import (
 	"fmt"
 
 	"galere.se/oss-codenames-api/pkg/domain_util"
-	"github.com/sirupsen/logrus"
 )
 
 // Adds an existing player to an existing game room
 func (s *Service) AddPlayerToGameRoom(ctx context.Context, room *GameRoom, player *Player) (*GameRoom, error) {
-	logrus.Infof("Adding player [%s] to game room [%s]", player.Name, room.Name)
+	s.baseService.Logger.Infof("Adding player [%s] to game room [%s]", player.Name, room.Name)
 
 	if room.State != GameRoomStateWaitingForPlayers {
 		return nil, domain_util.NewStateValidationError("The game has already started, new players may not join now!")
@@ -18,7 +17,7 @@ func (s *Service) AddPlayerToGameRoom(ctx context.Context, room *GameRoom, playe
 
 	// Nothing to do if the player is already in the room :)
 	if room.IsPlayerInRoom(player) {
-		logrus.Debugf("Player [%s] who is trying to join is already in game room [%s]", player.Id, room.Name)
+		s.baseService.Logger.Debugf("Player [%s] who is trying to join is already in game room [%s]", player.Id, room.Name)
 		return room, nil
 	}
 
@@ -29,7 +28,7 @@ func (s *Service) AddPlayerToGameRoom(ctx context.Context, room *GameRoom, playe
 		return nil, domain_util.NewUnexpectedError(err, "failed to save game room for new player")
 	}
 
-	logrus.Infof("Added player [%s] to game room [%s]", player.Name, room.Name)
+	s.baseService.Logger.Infof("Added player [%s] to game room [%s]", player.Name, room.Name)
 
 	s.triggerGameRoomEvents(room, GameRoomEventPlayerJoined)
 
@@ -38,7 +37,7 @@ func (s *Service) AddPlayerToGameRoom(ctx context.Context, room *GameRoom, playe
 
 // Updates the player team in a game room
 func (s *Service) AddPlayerToTeam(ctx context.Context, room *GameRoom, player *Player, team TeamName) (*GameRoom, error) {
-	logrus.Infof("Updating player [%s] team to [%s] in game room [%s]", player.Name, team, room.Name)
+	s.baseService.Logger.Infof("Updating player [%s] team to [%s] in game room [%s]", player.Name, team, room.Name)
 
 	if room.State != GameRoomStateWaitingForPlayers {
 		return nil, domain_util.NewStateValidationError("The game has already started, you may not select your team at the moment!")
@@ -80,7 +79,7 @@ func (s *Service) AddPlayerToTeam(ctx context.Context, room *GameRoom, player *P
 		return nil, domain_util.NewUnexpectedError(err, "failed to save game room for updated player team")
 	}
 
-	logrus.Infof("Updated player [%s] team to [%s] in game room [%s]", player.Name, team, room.Name)
+	s.baseService.Logger.Infof("Updated player [%s] team to [%s] in game room [%s]", player.Name, team, room.Name)
 
 	s.triggerGameRoomEvents(room, GameRoomEventTeamSelected)
 
@@ -89,7 +88,7 @@ func (s *Service) AddPlayerToTeam(ctx context.Context, room *GameRoom, player *P
 
 // Sets the spymaster for the current game round
 func (s *Service) SetSpymaster(ctx context.Context, room *GameRoom, player *Player) (*GameRoom, error) {
-	logrus.Infof("Setting spymaster for game in room [%s] to player [%s]", room.Id, player.Name)
+	s.baseService.Logger.Infof("Setting spymaster for game in room [%s] to player [%s]", room.Id, player.Name)
 
 	// Validation
 
@@ -110,13 +109,13 @@ func (s *Service) SetSpymaster(ctx context.Context, room *GameRoom, player *Play
 	switch team {
 	case TeamNameRed:
 		if room.CurrentRound.RedSpymaster != nil && room.CurrentRound.RedSpymaster.Id != player.Id {
-			logrus.Infof("Spymaster for red team already set to [%s], changing it", room.CurrentRound.RedSpymaster.Name)
+			s.baseService.Logger.Infof("Spymaster for red team already set to [%s], changing it", room.CurrentRound.RedSpymaster.Name)
 		}
 		room.CurrentRound.RedSpymaster = player
 
 	case TeamNameBlue:
 		if room.CurrentRound.BlueSpymaster != nil && room.CurrentRound.BlueSpymaster.Id != player.Id {
-			logrus.Infof("Spymaster for blue team already set to [%s], changing it", room.CurrentRound.BlueSpymaster.Name)
+			s.baseService.Logger.Infof("Spymaster for blue team already set to [%s], changing it", room.CurrentRound.BlueSpymaster.Name)
 		}
 		room.CurrentRound.BlueSpymaster = player
 
@@ -129,7 +128,7 @@ func (s *Service) SetSpymaster(ctx context.Context, room *GameRoom, player *Play
 		return nil, domain_util.NewUnexpectedError(err, "failed to save game room when updating spymaster")
 	}
 
-	logrus.Infof("Set spymaster for game in room [%s] and player [%s] on team [%s]", room.Id, player.Name, team)
+	s.baseService.Logger.Infof("Set spymaster for game in room [%s] and player [%s] on team [%s]", room.Id, player.Name, team)
 
 	s.triggerGameRoomEvents(room, GameRoomEventSpymasterSelected)
 

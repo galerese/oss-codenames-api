@@ -5,7 +5,6 @@ import (
 	"math/rand"
 
 	"galere.se/oss-codenames-api/pkg/domain_util"
-	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -31,7 +30,7 @@ var (
 		"frost", "voice", "paper", "frog", "smoke", "star"}
 )
 
-func (s *Service) generateRandomGameRoomName() (string, error) {
+func (s *Service) generateRandomGameRoomName() string {
 
 	// Randomly select two adjectives and a noun and the adjectives are not repeated
 	adjective1Index := rand.Intn(len(RandomGameRoomWordsAdjective))
@@ -44,12 +43,12 @@ func (s *Service) generateRandomGameRoomName() (string, error) {
 	adjective2 := RandomGameRoomWordsAdjective[adjective2Index]
 	noun := RandomGameRoomWordsNouns[rand.Intn(len(RandomGameRoomWordsNouns))]
 
-	return fmt.Sprintf("%s-%s-%s", adjective1, adjective2, noun), nil
+	return fmt.Sprintf("%s-%s-%s", adjective1, adjective2, noun)
 }
 
 // placeholder for triggering events
 func (s *Service) triggerGameRoomEvents(room *GameRoom, eventType GameRoomEvent) error {
-	logrus.Debugf("Triggering event [%s] for room [%s]", eventType, room.Id)
+	s.baseService.Logger.Debugf("Triggering event [%s] for room [%s]", eventType, room.Id)
 	return nil
 }
 

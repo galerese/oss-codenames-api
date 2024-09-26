@@ -40,7 +40,7 @@ func (c *Controller) EnsureSessionForRequest(gc *gin.Context) *session.Session {
 
 	session, err := c.GetSessionFromRequest(gc)
 	if err != nil {
-		c.Error(gc, "You must have an authenticated session to perform this action, and we could not find one", err)
+		gc.Error(err)
 		return nil
 	}
 

@@ -33,5 +33,14 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: pass
+
+  test-redis:
+    image: "redis:latest"
+    ports:
+      - "6379:6379"
+    restart: always
+    volumes:
+      - test-redis:/data
 volumes:
   mongo-data:
+  test-redis:

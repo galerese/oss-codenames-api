@@ -39,7 +39,9 @@ func (c *Controller) PatchGameRoom(gc *gin.Context) {
 	//
 
 	request := PatchGameRoomRequest{}
-	if c.ParseBody(gc, &request) != nil {
+	err := c.ParseBody(gc, &request)
+	if err != nil {
+		c.APIError(gc, "A request body with a valid 'state' parameter is required", err, 400)
 		return
 	}
 
@@ -51,8 +53,6 @@ func (c *Controller) PatchGameRoom(gc *gin.Context) {
 	//
 	// Execute action :)
 	//
-
-	var err error
 
 	switch request.State {
 	// A game is starting

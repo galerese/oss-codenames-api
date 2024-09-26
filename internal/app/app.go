@@ -38,7 +38,11 @@ func Run(cfg *configs.Config) error {
 		return errors.Wrap(err, "Could not connect to mongodb!")
 	}
 
-	gameRepository := database.NewDatabase(mongoClient.Database(cfg.DatabaseName))
+	gameRepository := database.NewDatabase(mongoClient.Database(cfg.DatabaseName), l)
+	err = gameRepository.SetupLockExpiration(context.Background())
+	if err != nil {
+		return errors.Wrap(err, "Could not setup lock expiration for locking mechanics")
+	}
 
 	// Setup services
 	l.Info("Initializing services...")
@@ -47,7 +51,7 @@ func Run(cfg *configs.Config) error {
 
 	// Setup controllers
 	l.Info("Initializing controllers...")
-	gameController := gamec.NewController(gameService, sessionService, &l)
+	gameController := gamec.NewController(gameService, sessionService, gameRepository, &l)
 	sessionController := sessionc.NewController(sessionService, &l)
 
 	// Setup routes

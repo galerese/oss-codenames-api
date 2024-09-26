@@ -8,7 +8,6 @@ import (
 	"github.com/gin-contrib/cors"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
-	gintrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gin-gonic/gin"
 )
 
 func Bootstrap(router *gin.Engine, l logging.Logger, appName string) {
@@ -22,7 +21,7 @@ func Bootstrap(router *gin.Engine, l logging.Logger, appName string) {
 	}
 
 	// Datadog trace
-	router.Use(gintrace.Middleware(appName, gintrace.WithAnalytics(true)))
+	// router.Use(gintrace.Middleware(appName, gintrace.WithAnalytics(true)))
 
 	// Cors
 	router.Use(cors.Default())
@@ -31,7 +30,7 @@ func Bootstrap(router *gin.Engine, l logging.Logger, appName string) {
 	router.Use(ginzap.Ginzap(l.Desugar(), time.RFC3339, true))
 
 	// Generic Error handling :)
-	router.Use(GenericErrorHandler(l))
+	router.Use(GenericErrorResponseHandler(l))
 
 	// Middleware
 	router.Use(ginzap.RecoveryWithZap(l.Desugar(), true))

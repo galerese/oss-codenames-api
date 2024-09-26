@@ -57,17 +57,19 @@ func (c *Controller) PostGameRoomPlayer(gc *gin.Context) {
 
 	session.Player.Name = request.PlayerName
 
-	// Save the session
-	session, err := c.sessionService.SaveSession(ctx, session)
+	// Add the player to the game room
+	room, err := c.service.AddPlayerToGameRoom(ctx, room, session.Player)
 	if err != nil {
-		c.APIError(gc, "Unexpected errror saving session with the updated player name", err, 500)
+		c.APIError(gc, "Unexpected error when adding player to game room", err, 500)
 		return
 	}
 
-	// Add the player to the game room
-	room, err = c.service.AddPlayerToGameRoom(ctx, room, session.Player)
+	session.CurrentRoom = room
+
+	// Save the session
+	_, err = c.sessionService.SaveSession(ctx, session)
 	if err != nil {
-		c.APIError(gc, "Unexpected error when adding player to game room", err, 500)
+		c.APIError(gc, "Unexpected errror saving session with the updated player name", err, 500)
 		return
 	}
 

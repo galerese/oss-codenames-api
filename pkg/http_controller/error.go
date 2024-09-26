@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"galere.se/oss-codenames-api/pkg/domain_util"
 	"galere.se/oss-codenames-api/pkg/logging"
 	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
 )
 
 type ApiError struct {
@@ -35,28 +35,39 @@ type ErrorResponse struct {
 	Error string `json:"error"`
 }
 
-func GenericErrorHandler(l logging.Logger) gin.HandlerFunc {
-	l.Info("Setting up generic error handler")
+func GenericErrorResponseHandler(l logging.Logger) gin.HandlerFunc {
+	l.Info("Setting up generic error response handler")
 
 	return func(gc *gin.Context) {
 		gc.Next()
 
-		if gc.Errors != nil && len(gc.Errors) > 0 {
-			err := gc.Errors[0]
+		handled := false
 
+		for _, err := range gc.Errors {
 			if apiError, ok := err.Err.(*ApiError); ok {
-				// API error sent by the application
 				gc.JSON(apiError.code, ErrorResponse{Error: apiError.message})
-				// l.Error(apiError)
-			} else {
-				// Any other error, uncaught :o
-				gc.JSON(http.StatusInternalServerError, ErrorResponse{Error: "there was an internal server error, please try again later - the developers have been notified"})
-				l.Error(errors.Wrap(err, "Unexpected API error").Error())
+				handled = true
+				break
+			} else if _, ok := err.Err.(*domain_util.StateValidationError); ok {
+				gc.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Err.Error()})
+				handled = true
+				break
+			} else if _, ok := err.Err.(*domain_util.InvalidParameterError); ok {
+				gc.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Err.Error()})
+				handled = true
+				break
+			} else if _, ok := err.Err.(*domain_util.InvalidActionError); ok {
+				gc.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Err.Error()})
+				handled = true
+				break
 			}
-
-			gc.Abort()
-			return
 		}
+
+		if len(gc.Errors) > 0 && !handled {
+			// Any other error, uncaught :o
+			gc.JSON(http.StatusInternalServerError, ErrorResponse{Error: "there was an internal server error, please try again later - the developers have been notified"})
+		}
+
 	}
 
 }

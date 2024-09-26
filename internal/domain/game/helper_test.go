@@ -39,9 +39,7 @@ func Test_generateRandomGameRoomName(t *testing.T) {
 
 	// Run test multiple times to ensure randomness
 	for i := 0; i < 1000; i++ {
-		name, err := service.generateRandomGameRoomName()
-
-		assert.NoError(err)
+		name := service.generateRandomGameRoomName()
 
 		parts := strings.Split(name, "-")
 		assert.Len(parts, 3)

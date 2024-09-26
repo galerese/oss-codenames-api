@@ -12,7 +12,6 @@ type GameRoom struct {
 	Players      []*Player
 	CurrentRound *GameRound
 	RoundHistory []*GameRound
-	RoomCode     int
 }
 
 func (r *GameRoom) IsPlayerInRoom(player *Player) bool {

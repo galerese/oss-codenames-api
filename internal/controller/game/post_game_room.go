@@ -32,8 +32,9 @@ func (c *Controller) PostGameRoom(gc *gin.Context) {
 	//
 
 	request := PostGameRoomRequest{}
-	if c.ParseBody(gc, &request) != nil || request.PlayerName == "" {
-		c.APIError(gc, "A body parameter 'playerName' is required to indicate the player name", nil, 400)
+	err := c.ParseBody(gc, &request)
+	if err != nil || request.PlayerName == "" {
+		c.APIError(gc, "A body parameter 'playerName' is required to indicate the player name", err, 400)
 		return
 	}
 
@@ -47,19 +48,22 @@ func (c *Controller) PostGameRoom(gc *gin.Context) {
 	// Execute action :)
 	//
 
+	// Update session :)
 	session.Player.Name = request.PlayerName
-
-	// Save the session
-	session, err := c.sessionService.SaveSession(ctx, session)
-	if err != nil {
-		c.APIError(gc, "Unexpected errror saving session with the updated player name", err, 500)
-		return
-	}
 
 	// Create a game room
 	room, err := c.service.CreateGameRoom(ctx, session.Player)
 	if err != nil {
 		c.APIError(gc, "Unexpected error creating a game room", err, 500)
+		return
+	}
+
+	session.CurrentRoom = room
+
+	// Save the session
+	_, err = c.sessionService.SaveSession(ctx, session)
+	if err != nil {
+		c.APIError(gc, "Unexpected errror saving session with the updated player name", err, 500)
 		return
 	}
 
